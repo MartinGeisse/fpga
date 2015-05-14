@@ -1,0 +1,17 @@
+
+source Xilinx92i/settings.sh
+cd ~/auto-ise
+
+rm -rf build
+rm -rf xst
+mkdir build
+mkdir build/xst_temp
+source src/$1
+echo XST script file: $XST_SCRIPT_FILE
+echo constraints: $CONSTRAINTS_FILE
+
+xst -ifn "src/$XST_SCRIPT_FILE" -ofn build/synthesis.syr
+ngdbuild -dd build/ngdbuild_temp -nt timestamp -uc "src/$CONSTRAINTS_FILE" -p XC3S500E-FG320-4 build/synthesized.ngc build/synthesized.ngd
+map -p XC3S500E-FG320-4 -ol high -o build/mapped.ncd build/synthesized.ngd build/mapped.pcf
+par -ol high build/mapped.ncd build/routed.ncd build/mapped.pcf
+bitgen build/routed.ncd build/bitfile.bit build/mapped.pcf
