@@ -1,0 +1,2 @@
+export XST_SCRIPT_FILE=display_hello.xst
+export CONSTRAINTS_FILE=display_hello.ucf
