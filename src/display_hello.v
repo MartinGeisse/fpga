@@ -9,6 +9,7 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
     output g;
     output b;
 
+
 	//
 	// Display
 	//
@@ -24,16 +25,22 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
 	dsp dsp1 (.clk(clk),
 		.dsp_row(rowIndexRegister[4:0]),
 		.dsp_col(addr[8:2]), // TODO
-		.dsp_en(en), // TODO
-		.dsp_wr(wr), // TODO
-		.dsp_wr_data(data_in[15:0]), // TODO
-		// .dsp_rd_data(data_out[15:0]), // TODO unused, remove if no problem
+		.dsp_en(cpuWriteStrobe & ~cpuPortId[7]),
+		.dsp_wr(1),
+		.dsp_wr_data({8'b00001111, cpuWriteData}),
 		.hsync(hsync),
 		.vsync(vsync),
 		.r(wideR),
 		.g(wideG),
 		.b(wideB)
 	);
+	
+	always @(posedge clk) begin
+		if (cpuWriteStrobe & cpuPortId == 8'b10000000) begin
+			rowIndexRegister <= cpuWriteData[4:0];
+		end
+	end
+	
 
 	//
 	// CPU
@@ -69,12 +76,10 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
 	 	
 	);
 	
-	// TODO instruction memory
-
-	//
-	// port wiring
-	//
-	
-	// TODO
+	ProgramMemory programMemory (
+		.clk(clk),
+		.address(cpuInstructionAddress),
+		.instruction(cpuInstruction)
+	);
 
 endmodule
