@@ -11,38 +11,6 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
 
 
 	//
-	// Display
-	//
-
-	wire[2:0] wideR;
-	assign r = wideR[2];
-	wire[2:0] wideG;
-	assign g = wideG[2];
-	wire[2:0] wideB;
-	assign b = wideB[2];
-	reg[4:0] rowIndexRegister;
-
-	dsp dsp1 (.clk(clk),
-		.dsp_row(rowIndexRegister[4:0]),
-		.dsp_col(addr[8:2]), // TODO
-		.dsp_en(cpuWriteStrobe & ~cpuPortId[7]),
-		.dsp_wr(1),
-		.dsp_wr_data({8'b00001111, cpuWriteData}),
-		.hsync(hsync),
-		.vsync(vsync),
-		.r(wideR),
-		.g(wideG),
-		.b(wideB)
-	);
-	
-	always @(posedge clk) begin
-		if (cpuWriteStrobe & cpuPortId == 8'b10000000) begin
-			rowIndexRegister <= cpuWriteData[4:0];
-		end
-	end
-	
-
-	//
 	// CPU
 	//
 	
@@ -72,7 +40,7 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
 	 	.in_port(cpuReadData),
 	 	
 	 	// interrupts
-	 	.interrupt(0),
+	 	.interrupt(0)
 	 	
 	);
 	
@@ -81,5 +49,40 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
 		.address(cpuInstructionAddress),
 		.instruction(cpuInstruction)
 	);
+
+
+	//
+	// Display
+	//
+
+	wire[2:0] wideR;
+	assign r = wideR[2];
+	wire[2:0] wideG;
+	assign g = wideG[2];
+	wire[2:0] wideB;
+	assign b = wideB[2];
+	reg[4:0] rowIndexRegister;
+
+	dsp dsp1 (
+		.clk(clk),
+		.reset(reset),
+		.addr({rowIndexRegister[4:0], cpuPortId[6:0]}),
+		.en(cpuWriteStrobe & ~cpuPortId[7]),
+		.wr(1),
+		.data_in({8'b00001111, cpuWriteData}),
+		.hsync(hsync),
+		.vsync(vsync),
+		.r(wideR),
+		.g(wideG),
+		.b(wideB)
+	);
+	
+	always @(posedge clk) begin
+		if (cpuWriteStrobe & cpuPortId == 8'b10000000) begin
+			rowIndexRegister <= cpuWriteData[4:0];
+		end
+	end
+	
+
 
 endmodule
