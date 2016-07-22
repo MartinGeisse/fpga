@@ -1,6 +1,6 @@
 set -tmpdir build/xst_temp
 run
--ifn src/display_hello.prj
+-ifn src/gpu/display_hello.prj
 -ofmt NGC
 -ofn build/synthesized.ngc
 -top display_hello
