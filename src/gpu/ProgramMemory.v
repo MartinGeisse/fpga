@@ -7,7 +7,7 @@
 module ProgramMemory (
 		
 		/** the clock signal **/
-		input [9:0] clk,
+		input clk,
 		
 		/** the current instruction address **/
 		input [9:0] address,
