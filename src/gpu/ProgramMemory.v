@@ -18,7 +18,16 @@ module ProgramMemory (
 	);
 	
 	RAMB16_S18 blockRam(
-		.DI (16'h0000),		.DIP (2'b00),		.EN (1'b1),		.WE (1'b0),		.SSR (1'b0),		.CLK (clk),		.ADDR (address),		.DO (instruction[15:0]),		.DOP (instruction[17:16])	/*synthesis
+		.DI (16'h0000),
+		.DIP (2'b00),
+		.EN (1'b1),
+		.WE (1'b0),
+		.SSR (1'b0),
+		.CLK (clk),
+		.ADDR (address),
+		.DO (instruction[15:0]),
+		.DOP (instruction[17:16])
+	/*synthesis
 init_00 = "0000000000000000000000000000000000000000000000000000000000004000"
 init_01 = "0000000000000000000000000000000000000000000000000000000000000000"
 init_02 = "0000000000000000000000000000000000000000000000000000000000000000"
@@ -242,3 +251,4 @@ defparam blockRam.INITP_07 = 256'h0000000000000000000000000000000000000000000000
 // synthesis attribute INITP_07 of blockRam is "0000000000000000000000000000000000000000000000000000000000000000"
 
 endmodule
+
