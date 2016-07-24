@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 
-module display_hello(clk, reset, hsync, vsync, r, g, b);
+module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 
     input clk;
     input reset;
@@ -11,6 +11,7 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
     output r;
     output g;
     output b;
+    input serialPortDataIn;
 
 
 	//
@@ -86,6 +87,19 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
 		end
 	end
 	
-
+	
+	//
+	// Serial Port
+	//
+	ser ser1(
+		.clk(clk),
+		.reset(reset),
+		.en((cpuWriteStrobe | cpuReadStrobe) & (cpuPortId == 8'b1000001x)),
+		.wr(cpuWriteStrobe),
+		.addr(cpuPortId[0]),
+		.data_in(cpuWriteData),
+		.data_out(cpuReadData),
+		.rdx(serialPortDataIn)
+	);
 
 endmodule
