@@ -1,3 +1,6 @@
+`default_nettype none
+`timescale 1ns / 1ps
+
 
 //
 // note: writing can ignore the 'wt' (wait) signal

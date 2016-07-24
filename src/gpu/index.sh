@@ -1,2 +1,2 @@
-export XST_SCRIPT_FILE=display_hello.xst
-export CONSTRAINTS_FILE=display_hello.ucf
+export XST_SCRIPT_FILE=gpu/display_hello.xst
+export CONSTRAINTS_FILE=gpu/display_hello.ucf

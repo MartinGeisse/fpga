@@ -1,3 +1,6 @@
+`default_nettype none
+`timescale 1ns / 1ps
+
 module display(clk,
                dsp_row, dsp_col, dsp_en, dsp_wr,
                dsp_wr_data, dsp_rd_data,

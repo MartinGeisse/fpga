@@ -1,3 +1,6 @@
+`default_nettype none
+`timescale 1ns / 1ps
+
 
 module display_hello(clk, reset, hsync, vsync, r, g, b);
 
@@ -78,7 +81,7 @@ module display_hello(clk, reset, hsync, vsync, r, g, b);
 	);
 	
 	always @(posedge clk) begin
-		if (cpuWriteStrobe & cpuPortId == 8'b10000000) begin
+		if (cpuWriteStrobe & (cpuPortId == 8'b10000000)) begin
 			rowIndexRegister <= cpuWriteData[4:0];
 		end
 	end

@@ -1,3 +1,6 @@
+`default_nettype none
+`timescale 1ns / 1ps
+
 module timing(clk, pixclk,
               txtrow, txtcol,
               chrrow, chrcol,

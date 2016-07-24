@@ -1,3 +1,6 @@
+`default_nettype none
+`timescale 1ns / 1ps
+
 module pixel(clk, pixclk, attcode,
              pixel, blank, hsync_in, vsync_in, blink,
              r, g, b, hsync, vsync);
