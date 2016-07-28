@@ -99,7 +99,7 @@ module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 		.addr(cpuPortId[0]),
 		.data_in(cpuWriteData),
 		.data_out(cpuReadData),
-		.rdx(serialPortDataIn)
+		.rxd(serialPortDataIn)
 	);
 
 endmodule

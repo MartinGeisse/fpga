@@ -9,7 +9,7 @@ module rcv(clk, reset, full, parallel_out, serial_in);
   reg serial_s;
   reg [3:0] state;
   reg [8:0] shift;
-  reg [10:0] count;
+  reg [15:0] count;
 
   assign parallel_out[7:0] = shift[7:0];
 
@@ -27,7 +27,7 @@ module rcv(clk, reset, full, parallel_out, serial_in);
         full <= 0;
         if (serial_s == 0) begin
           state <= 4'h1;
-          count <= 651;
+          count <= 25000;
         end
       end else
       if (state == 4'hb) begin
@@ -37,7 +37,7 @@ module rcv(clk, reset, full, parallel_out, serial_in);
         if (count == 0) begin
           state <= state + 1;
           shift[8:0] <= { serial_s, shift[8:1] };
-          count <= 1302;
+          count <= 50000;
         end else begin
           count <= count - 1;
         end
