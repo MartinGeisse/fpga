@@ -49,7 +49,7 @@ module bitlog(clk, reset, bitIn, readEnable, readIndex, readData, readWait);
 	end
 
 	// length memory
-	RAMB16_S36_S36 memory (
+	RAMB16_S36_S36 lengthMemory (
 
 		// logging port
 		.CLKA(clk),
@@ -66,7 +66,7 @@ module bitlog(clk, reset, bitIn, readEnable, readIndex, readData, readWait);
 		.SSRB(1'b0),
 		.ADDRB(readIndex),
 		.WEB(1'b0),
-		.DOB(readData),
+		.DOB(readData)
 
 	);
 
@@ -85,5 +85,4 @@ module bitlog(clk, reset, bitIn, readEnable, readIndex, readData, readWait);
 		end
 	end
 
-	
-endmodule;
+endmodule
