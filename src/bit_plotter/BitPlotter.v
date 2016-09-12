@@ -48,7 +48,7 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 	always @(posedge clk) begin
 		vga2hsync <= vga1hsync;
 		vga2vsync <= vga1vsync;
-		vga2blank <= vga1blank;
+		vga2blank <= vga1blank | vga1y[0];
 	end
 
 	wire vga2dataBit;
