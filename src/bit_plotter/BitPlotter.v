@@ -8,6 +8,46 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 	output reg r, g, b, hsync, vsync;
 
 	// ------------------------
+	// data-in sampling
+	// ------------------------
+
+	reg running;
+	initial running <= 0;
+	always @(posedge clk) begin
+		if (clear) begin
+			running <= 0;
+		end else if (start) begin
+			running <= 1;
+		end
+	end
+
+	reg writeEnable;
+	reg[12:0] prescaleCounter;
+	reg[13:0] writeIndex;
+	initial begin
+		writeEnable <= 0;
+		prescaleCounter <= 0;
+		writeIndex <= 0;
+	end
+	always @(posedge clk) begin
+		if (clear) begin
+			writeEnable <= 0;
+			prescaleCounter <= 0;
+			writeIndex <= 0;
+		end else if (running) begin
+			if (prescaleCounter == 0) begin
+				writeEnable <= 1;
+				if (writeIndex != 14'b11111111111111) begin
+					writeIndex <= writeIndex + 1;
+				end
+			end else begin
+				writeEnable <= 0;
+			end
+			prescaleCounter <= prescaleCounter + 1;
+		end
+	end
+
+	// ------------------------
 	// VGA pipeline 0->1
 	// ------------------------
 
@@ -28,19 +68,19 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 	// ------------------------
 
 	wire[13:0] vga1index;
-	assign vga1index = {vga1y[5:1], vga1x[8:0]};
+	assign vga1index = {vga1y[7:3], vga1x[8:0]};
 
 	// ------------------------
 	// VGA pipeline 1->2
 	// ------------------------
 
-	reg vga2endReached;
-	initial vga2endReached <= 0;
+	reg vga2endOfDataReached;
+	initial vga2endOfDataReached <= 0;
 	always @(posedge clk) begin
-		if (vga1vsync) begin
-			vga2endReached <= 0;
+		if (vga1y[9]) begin
+			vga2endOfDataReached <= 0;
 		end else if (vga1index == writeIndex) begin
-			vga2endReached <= 1;
+			vga2endOfDataReached <= 1;
 		end
 	end
 
@@ -48,7 +88,7 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 	always @(posedge clk) begin
 		vga2hsync <= vga1hsync;
 		vga2vsync <= vga1vsync;
-		vga2blank <= vga1blank | vga1y[0];
+		vga2blank <= vga1blank | vga1y[0] | vga1y[1] | vga1y[2] | vga1x[9] | vga1y[8] | vga1y[9];
 	end
 
 	wire vga2dataBit;
@@ -77,7 +117,7 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 	// ------------------------
 
 	wire vga2combinedBlank;
-	assign vga2combinedBlank = vga2blank | vga2endReached;
+	assign vga2combinedBlank = vga2blank | vga2endOfDataReached;
 
 	// ------------------------
 	// VGA pipeline 2->3
@@ -89,29 +129,6 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 		b <= 0;
 		hsync <= vga2hsync;
 		vsync <= vga2vsync;
-	end
-
-	// ------------------------
-	// data-in sampling
-	// ------------------------
-
-	reg writeEnable;
-	reg[13:0] writeIndex;
-	reg[14:0] prescaleCounter;
-	initial begin
-		writeEnable <= 0;
-		prescaleCounter <= 0;
-	end
-	always @(posedge clk) begin
-		if (prescaleCounter == 0) begin
-			writeEnable <= 1;
-			if (writeIndex != 14'b11111111111111) begin
-				writeIndex <= writeIndex + 1;
-			end
-		end else begin
-			writeEnable <= 0;
-		end
-		prescaleCounter <= prescaleCounter + 1;
 	end
 
 endmodule
