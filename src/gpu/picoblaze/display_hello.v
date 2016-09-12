@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 
-module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
+module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn, ps2_clk, ps2_data);
 
     input clk;
     input reset;
@@ -96,12 +96,30 @@ module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 	ser ser1(
 		.clk(clk),
 		.reset(reset),
-		.en((cpuWriteStrobe | cpuReadStrobe) & (cpuPortId[7:1] == 7'b1000001)),
+		.en((cpuWriteStrobe | cpuReadStrobe) & (cpuPortId == 8'b1000001x)),
 		.wr(cpuWriteStrobe),
 		.addr(cpuPortId[0]),
 		.data_in(cpuWriteData),
 		.data_out(cpuReadData),
 		.rxd(serialPortDataIn)
+	);
+
+	//
+	// Keyboard
+	//
+	kbd kbd_1(
+		TODO
+		.clk(clk),
+		.rst(rst),
+		.stb(kbd_stb),
+		.we(bus_we),
+		.addr(bus_addr[2]),
+		.data_in(bus_dout[7:0]),
+		.data_out(kbd_dout[7:0]),
+		.ack(kbd_ack),
+		.irq(kbd_irq),
+		.ps2_clk(ps2_clk),
+		.ps2_data(ps2_data)
 	);
 
 endmodule

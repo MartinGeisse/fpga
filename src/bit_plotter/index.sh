@@ -1,0 +1,2 @@
+export XST_SCRIPT_FILE=bit_plotter/BitPlotter.xst
+export CONSTRAINTS_FILE=bit_plotter/BitPlotter.ucf
