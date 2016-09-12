@@ -9,7 +9,7 @@ module VgaTiming(clk, x, y, hsync, vsync, blank);
 	output reg vsync;
 	output blank;
 
-	reg z;
+	reg p;
 	reg xblank, yblank;
 
 	initial begin
@@ -42,7 +42,7 @@ module VgaTiming(clk, x, y, hsync, vsync, blank);
 					y <= y + 1;
 				end
 			end else begin
-				if x == 639 begin
+				if (x == 639) begin
 					xblank <= 1;
 				end else if (x == 655) begin
 					hsync <= 0;

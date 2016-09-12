@@ -57,18 +57,18 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 		// write port (data sampling)
 		.CLKA(clk),
 		.ENA(writeEnable),
-		.SSRA(0),
-		.WEA(1),
+		.SSRA(1'b0),
+		.WEA(1'b1),
 		.ADDRA(writeIndex),
 		.DIA(bitIn),
 
 		// read port (VGA)
 		.CLKB(clk),
-		.ENB(1),
-		.SSRB(0),
-		.WEB(0),
+		.ENB(1'b1),
+		.SSRB(1'b0),
+		.WEB(1'b0),
 		.ADDRB(vga1index),
-		.DOB(vga2dataBit),
+		.DOB(vga2dataBit)
 
 	);
 
@@ -102,7 +102,7 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 		writeEnable <= 0;
 		prescaleCounter <= 0;
 	end
-	always @(posedge clk) {
+	always @(posedge clk) begin
 		if (prescaleCounter == 0) begin
 			writeEnable <= 1;
 			if (writeIndex != 14'b11111111111111) begin
@@ -112,6 +112,6 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 			writeEnable <= 0;
 		end
 		prescaleCounter <= prescaleCounter + 1;
-	}
+	end
 
 endmodule
