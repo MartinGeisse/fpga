@@ -94,7 +94,7 @@ module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 	ser ser1(
 		.clk(clk),
 		.reset(reset),
-		.en((cpuWriteStrobe | cpuReadStrobe) & (cpuPortId == 8'b1000001x)),
+		.en((cpuWriteStrobe | cpuReadStrobe) & (cpuPortId[7:1] == 7'b1000001)),
 		.wr(cpuWriteStrobe),
 		.addr(cpuPortId[0]),
 		.data_in(cpuWriteData),
