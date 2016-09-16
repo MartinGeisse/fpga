@@ -5,15 +5,14 @@ module rcv(clk, reset, full, parallel_out, serial_in);
     output [7:0] parallel_out;
     input serial_in;
 
-  // localparam SERIAL_PORT_BIT_DURATION_CLOCKS = (50 * 1000 * 1000) / 1200; // speed is 1200 baud
-  localparam SERIAL_PORT_BIT_DURATION_CLOCKS = 500; // TODO for testing
+  localparam SERIAL_PORT_BIT_DURATION_CLOCKS = (50 * 1000 * 1000) / 10000; // speed is 10 kbaud
   localparam SERIAL_PORT_BIT_DURATION_CLOCKS_HALF = (SERIAL_PORT_BIT_DURATION_CLOCKS / 2);
 
   reg serial_p;
   reg serial_s;
   reg [3:0] state;
   reg [8:0] shift;
-  reg [15:0] count;
+  reg [31:0] count;
 
   assign parallel_out[7:0] = shift[7:0];
 

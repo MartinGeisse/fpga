@@ -12,8 +12,6 @@ module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
     output g;
     output b;
     input serialPortDataIn;
-    input ps2_clk;
-    input ps2_data;
 
 
 	//

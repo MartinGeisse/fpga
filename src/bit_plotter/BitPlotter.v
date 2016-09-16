@@ -22,7 +22,7 @@ module BitPlotter(clk, start, clear, bitIn, r, g, b, hsync, vsync);
 	end
 
 	reg writeEnable;
-	reg[12:0] prescaleCounter;
+	reg[14:0] prescaleCounter;
 	reg[13:0] writeIndex;
 	initial begin
 		writeEnable <= 0;
