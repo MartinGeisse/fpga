@@ -35,23 +35,28 @@ public final class LwjglWindow {
 	}
 
 	/**
+	 *
+	 */
+	public void maintenance() {
+		Display.processMessages();
+		Keyboard.poll();
+		if (Display.isCloseRequested() || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
+			close();
+			System.exit(0);
+		}
+	}
+
+	/**
 	 * 
 	 */
 	public void waitForClose() {
 		while (true) {
-			Display.processMessages();
-			Keyboard.poll();
-			if (Display.isCloseRequested() || Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) {
-				break;
-			}
+			maintenance();
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
-				break;
 			}
 		}
-		close();
-		System.exit(0);
 	}
 	
 	/**

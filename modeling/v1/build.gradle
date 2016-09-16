@@ -1,5 +1,5 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
+apply plugin: 'application'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -40,5 +40,8 @@ dependencies {
 	compile 'org.lwjgl.lwjgl:lwjgl_util:2.9.3'
 	compile 'slick:slick:20121001-264'
 	compile 'com.googlecode.soundlibs:jorbis:0.0.17-2'
+
+	// Groovy (DSL support)
+	compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.7'
 
 }

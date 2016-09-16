@@ -1,0 +1,31 @@
+
+loop:
+
+	; receive command word (currently ignored and should be 0)
+	CALL receive
+	
+	; row index
+	CALL receive
+	OUTPUT s0, 80
+	
+	; column index
+	CALL receive
+	LOAD s1, s0
+	
+	; character
+	CALL receive
+	OUTPUT s0, s1
+	
+	; loop
+	JUMP loop
+
+;
+; ---------------------------------------------------------------------------------
+;
+
+receive:
+	INPUT s0, 82
+	TEST s0, 01
+	JUMP Z, receive
+	INPUT s0, 83
+	RETURN

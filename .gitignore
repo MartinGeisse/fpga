@@ -1,7 +1,7 @@
 .DS_Store
 .project
+.idea
+.gradle
 *.vvp
-/src/external/kcpsm3.v
-/src/gpu/external/kcpsm3.v
-/.idea
-/fpga.iml
+kcpsm3.v
+*.iml

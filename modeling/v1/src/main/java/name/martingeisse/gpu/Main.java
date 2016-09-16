@@ -30,6 +30,7 @@ public class Main {
 		
 		double a = 0;
 		while (true) {
+			window.maintenance();
 			frameBuffer.fill(0);
 			double dx1 = Math.cos(a);
 			double dy1 = Math.sin(a);
