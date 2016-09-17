@@ -4,20 +4,18 @@
 module chrgen(clk, pixclk,
               chrcode, chrrow, chrcol,
               pixel,
-              attcode_in, blank_in, hsync_in, vsync_in, blink_in,
-              attcode_out, blank_out, hsync_out, vsync_out, blink_out);
+              blank_in, hsync_in, vsync_in, blink_in,
+              blank_out, hsync_out, vsync_out, blink_out);
     input clk;
     input pixclk;
     input [7:0] chrcode;
     input [3:0] chrrow;
     input [2:0] chrcol;
     output pixel;
-    input [7:0] attcode_in;
     input blank_in;
     input hsync_in;
     input vsync_in;
     input blink_in;
-    output reg [7:0] attcode_out;
     output reg blank_out;
     output reg hsync_out;
     output reg vsync_out;
@@ -213,7 +211,6 @@ module chrgen(clk, pixclk,
 
   always @(posedge clk) begin
     if (pixclk == 1) begin
-      attcode_out[7:0] <= attcode_in[7:0];
       blank_out <= blank_in;
       hsync_out <= hsync_in;
       vsync_out <= vsync_in;

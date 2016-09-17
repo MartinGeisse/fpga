@@ -3,7 +3,7 @@
 
 module display(clk,
                dsp_row, dsp_col, dsp_en, dsp_wr,
-               dsp_wr_data, dsp_rd_data,
+               dsp_wr_data,
                hsync, vsync, r, g, b);
 
     input clk;
@@ -12,7 +12,6 @@ module display(clk,
     input dsp_en;
     input dsp_wr;
     input [15:0] dsp_wr_data;
-    output [15:0] dsp_rd_data;
     output hsync;
     output vsync;
     output [2:0] r;
@@ -28,7 +27,6 @@ module display(clk,
   wire timing_hsync;
   wire timing_vsync;
   wire timing_blink;
-  wire [7:0] dspmem_attcode;
   wire [7:0] dspmem_chrcode;
   wire [3:0] dspmem_chrrow;
   wire [2:0] dspmem_chrcol;
@@ -36,7 +34,6 @@ module display(clk,
   wire dspmem_hsync;
   wire dspmem_vsync;
   wire dspmem_blink;
-  wire [7:0] chrgen_attcode;
   wire chrgen_pixel;
   wire chrgen_blank;
   wire chrgen_hsync;
@@ -60,14 +57,12 @@ module display(clk,
     .rdwr_row(dsp_row[4:0]),
     .rdwr_col(dsp_col[6:0]),
     .wr_data(dsp_wr_data[15:0]),
-    .rd_data(dsp_rd_data[15:0]),
     .en(dsp_en),
     .wr(dsp_wr),
     .clk(clk),
     .pixclk(pixclk),
     .txtrow(timing_txtrow[4:0]),
     .txtcol(timing_txtcol[6:0]),
-    .attcode(dspmem_attcode[7:0]),
     .chrcode(dspmem_chrcode[7:0]),
     .chrrow_in(timing_chrrow[3:0]),
     .chrcol_in(timing_chrcol[2:0]),
@@ -90,12 +85,10 @@ module display(clk,
     .chrrow(dspmem_chrrow[3:0]),
     .chrcol(dspmem_chrcol[2:0]),
     .pixel(chrgen_pixel),
-    .attcode_in(dspmem_attcode[7:0]),
     .blank_in(dspmem_blank),
     .hsync_in(dspmem_hsync),
     .vsync_in(dspmem_vsync),
     .blink_in(dspmem_blink),
-    .attcode_out(chrgen_attcode[7:0]),
     .blank_out(chrgen_blank),
     .hsync_out(chrgen_hsync),
     .vsync_out(chrgen_vsync),
@@ -105,7 +98,7 @@ module display(clk,
   pixel pixel1(
     .clk(clk),
     .pixclk(pixclk),
-    .attcode(chrgen_attcode[7:0]),
+    .attcode(8'b00001111),
     .pixel(chrgen_pixel),
     .blank(chrgen_blank),
     .hsync_in(chrgen_hsync),

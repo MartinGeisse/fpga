@@ -2,24 +2,17 @@
 `timescale 1ns / 1ps
 
 
-//
-// note: writing can ignore the 'wt' (wait) signal
-//
-
 module dsp(clk, reset,
-           addr, en, wr, wt,
-           data_in, data_out,
+           addr, wr,
+           data_in,
            hsync, vsync,
            r, g, b);
 
     input clk;
     input reset;
     input [13:2] addr;
-    input en;
     input wr;
-    output wt;
     input [15:0] data_in;
-    output [15:0] data_out;
     output hsync;
     output vsync;
     output [2:0] r;
@@ -31,35 +24,13 @@ module dsp(clk, reset,
   display display1 (.clk(clk),
                     .dsp_row(addr[13:9]),
                     .dsp_col(addr[8:2]),
-                    .dsp_en(en),
+                    .dsp_en(wr),
                     .dsp_wr(wr),
                     .dsp_wr_data(data_in[15:0]),
-                    .dsp_rd_data(data_out[15:0]),
                     .hsync(hsync),
                     .vsync(vsync),
                     .r(r[2:0]),
                     .g(g[2:0]),
                     .b(b[2:0]));
-
-  always @(posedge clk) begin
-    if (reset == 1) begin
-      state <= 1'b0;
-    end else begin
-      case (state)
-        1'b0:
-          begin
-            if (en == 1 && wr == 0) begin
-              state <= 1'b1;
-            end
-          end
-        1'b1:
-          begin
-            state <= 1'b0;
-          end
-      endcase
-    end
-  end
-
-  assign wt = (en == 1 && wr == 0 && state == 1'b0) ? 1 : 0;
 
 endmodule
