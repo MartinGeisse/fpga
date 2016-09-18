@@ -2,7 +2,7 @@
 `timescale 1ns / 1ps
 
 
-module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
+module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 
     input clk;
     input reset;

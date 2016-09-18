@@ -1,4 +1,4 @@
-verilog work display_hello.v
+verilog work Gpu.v
 verilog work ProgramMemory.v
 verilog work external/kcpsm3.v
 verilog work ser/ser.v

@@ -1,9 +1,0 @@
-set -tmpdir build/xst_temp
-run
--ifn src/gpu/display/display_hello.prj
--ofmt NGC
--ofn build/synthesized.ngc
--top Display
--p XC3S500E-FG320-4
--opt_level 1
--opt_mode SPEED
