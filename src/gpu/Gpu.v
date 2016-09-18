@@ -25,6 +25,7 @@ module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 	wire[7:0] cpuWriteData;
 	wire cpuReadStrobe;
 	wire cpuWriteStrobe;
+	wire cpuInterrupt;
 	
 	kcpsm3 cpu (
 	
@@ -44,7 +45,7 @@ module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 	 	.in_port(cpuReadData),
 	 	
 	 	// interrupts
-	 	.interrupt(0)
+	 	.interrupt(cpuInterrupt)
 	 	
 	);
 	
@@ -81,6 +82,9 @@ module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 	//
 	// Serial Port
 	//
+
+	wire serialPortReady;
+
 	ser ser1(
 		.clk(clk),
 		.reset(reset),
@@ -89,7 +93,14 @@ module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 		.addr(cpuPortId[0]),
 		.data_in(cpuWriteData),
 		.data_out(cpuReadData),
-		.rxd(serialPortDataIn)
+		.rxd(serialPortDataIn),
+		.ready(serialPortReady)
 	);
+
+	//
+	// wiring
+	//
+
+	assign cpuInterrupt = serialPortReady;
 
 endmodule

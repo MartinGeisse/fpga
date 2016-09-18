@@ -1,7 +1,7 @@
 module ser(clk, reset,
            en, wr, addr,
            data_in, data_out,
-	   rxd);
+	   rxd, ready);
     input clk;
     input reset;
     input en;
@@ -10,6 +10,7 @@ module ser(clk, reset,
     input [7:0] data_in;
     output reg [7:0] data_out;
     input rxd;
+    output ready;
 
   wire rd_rcv_data;
   assign rd_rcv_data = (en == 1 && wr == 0 && addr == 1'b1) ? 1 : 0;
@@ -30,5 +31,7 @@ module ser(clk, reset,
         data_out = 8'hxx;
     endcase
   end
+
+  assign ready = rcv_ready;
 
 endmodule
