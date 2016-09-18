@@ -73,7 +73,7 @@ module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 	);
 	always @(posedge clk) begin
 		if (cpuWriteStrobe & (cpuPortId == 8'b10000000)) begin
-			rowIndexRegister <= cpuWriteData[4:0];
+			rowIndexRegister <= cpuWriteData[6:0];
 		end
 	end
 	
