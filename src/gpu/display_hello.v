@@ -59,27 +59,18 @@ module display_hello(clk, reset, hsync, vsync, r, g, b, serialPortDataIn);
 	// Display
 	//
 
-	wire[2:0] wideR;
-	assign r = wideR[2];
-	wire[2:0] wideG;
-	assign g = wideG[2];
-	wire[2:0] wideB;
-	assign b = wideB[2];
-	reg[4:0] rowIndexRegister;
-
-	dsp dsp1 (
+	reg[6:0] rowIndexRegister;
+	Display display(
 		.clk(clk),
-		.reset(reset),
-		.addr({rowIndexRegister[4:0], cpuPortId[6:0]}),
-		.wr(cpuWriteStrobe & ~cpuPortId[7]),
-		.data_in({8'b00001111, cpuWriteData}),
+		.write(cpuWriteStrobe & ~cpuPortId[7]),
+		.writeAddress({rowIndexRegister, cpuPortId[6:0]}),
+		.writeData(cpuWriteData[2:0]),
 		.hsync(hsync),
 		.vsync(vsync),
-		.r(wideR),
-		.g(wideG),
-		.b(wideB)
+		.r(r),
+		.g(g),
+		.b(b)
 	);
-	
 	always @(posedge clk) begin
 		if (cpuWriteStrobe & (cpuPortId == 8'b10000000)) begin
 			rowIndexRegister <= cpuWriteData[4:0];

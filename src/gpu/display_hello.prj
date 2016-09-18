@@ -1,12 +1,8 @@
 verilog work display_hello.v
 verilog work ProgramMemory.v
 verilog work external/kcpsm3.v
-verilog work dsp/chrgen.v
-verilog work dsp/display.v
-verilog work dsp/dsp.v
-verilog work dsp/dspmem.v
-verilog work dsp/pixel.v
-verilog work dsp/timing.v
 verilog work ser/ser.v
 verilog work ser/rcvbuf.v
 verilog work ser/rcv.v
+verilog work display/VgaTiming.v
+verilog work display/Display.v
