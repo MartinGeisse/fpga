@@ -1,0 +1,9 @@
+set -tmpdir build/xst_temp
+run
+-ifn src/blink_with_control/blink_with_control.prj
+-ofmt NGC
+-ofn build/synthesized.ngc
+-top blink_with_control
+-p XC3S500E-FG320-4
+-opt_level 1
+-opt_mode SPEED

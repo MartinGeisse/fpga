@@ -1,0 +1,2 @@
+export XST_SCRIPT_FILE=blink_with_control/blink_with_control.xst
+export CONSTRAINTS_FILE=blink_with_control/blink_with_control.ucf

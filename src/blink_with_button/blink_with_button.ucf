@@ -1,0 +1,10 @@
+
+# clock
+NET "clk" LOC = "C9" | IOSTANDARD = LVCMOS33;
+NET "clk" PERIOD = 20.0ns HIGH 40%;
+
+# LEDs
+NET "led" LOC = "F12" | IOSTANDARD = LVTTL | SLEW = SLOW | DRIVE = 8;
+
+# Buttons
+NET "button" LOC = "V4" | IOSTANDARD = LVTTL | PULLDOWN;

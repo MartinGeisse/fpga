@@ -1,0 +1,2 @@
+export XST_SCRIPT_FILE=blink_with_button/blink_with_button.xst
+export CONSTRAINTS_FILE=blink_with_button/blink_with_button.ucf
