@@ -4,7 +4,7 @@
 /**
  * This is a PicoBlaze program memory.
  */
-module ProgramMemory (
+module IcpuProgramMemory (
 		
 		/** the clock signal **/
 		input clk,
@@ -18,10 +18,9 @@ module ProgramMemory (
 	);
 	
 	reg [17:0] rom [1023:0];
-	initial $readmemh("ProgramMemory.mif", rom, 0, 1023);
+	initial $readmemh("IcpuProgramMemory.mif", rom, 0, 1023);
 	always @(posedge clk) begin
 		instruction <= rom[address];
 	end
 	
 endmodule
-
