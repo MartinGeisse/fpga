@@ -2,7 +2,10 @@
 `timescale 1ns / 1ps
 
 
-module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn, displayModeSwitch);
+module Gpu(clk, reset,
+		hsync, vsync, r, g, b, displayModeSwitch,
+		serialPortDataIn,
+		keyboardPs2Clk, keyboardPs2Data);
 
 	//
 	// ports
@@ -17,6 +20,8 @@ module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn, displayModeSwitc
     output b;
     input serialPortDataIn;
 	input displayModeSwitch;
+	input keyboardPs2Clk;
+	input keyboardPs2Data;
 
 
 	//
@@ -191,14 +196,15 @@ module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn, displayModeSwitc
 	end
 	
 	wire textmodeHsync, textmodeVsync, textmodeR, textmodeG, textmodeB;
-	textmode_display textmode_display1(
+	wire[7:0] textmodeDisplayDataOut;
+	textmode_display textmodeDisplay1(
 		.clk(clk),
 		.dsp_row(textmodeRowIndexRegister),
 		.dsp_col(textmodeColumnIndexRegister),
 		.dsp_en(icpuPortId[2] & (icpuWriteStrobe | icpuReadStrobe)),
 		.dsp_wr(icpuWriteStrobe),
 		.dsp_wr_data({8'b00000111, icpuWriteData}),
-		.dsp_rd_data(icpuReadData), // TODO doesn't yet work because the display provides data one cycle too late!
+		.dsp_rd_data(textmodeDisplayDataOut), // TODO doesn't yet work because the display provides data one cycle too late!
 		.hsync(textmodeHsync),
 		.vsync(textmodeVsync),
 		.r(textmodeR),
@@ -206,12 +212,30 @@ module Gpu(clk, reset, hsync, vsync, r, g, b, serialPortDataIn, displayModeSwitc
 		.b(textmodeB)
 	);
 
+
+	//
+	// keyboard input
+	//
+
+	wire keyboardPs2Clk, keyboardPs2Data;
+	wire[7:0] keyboardDataOut;
+	kbd keyboardInterface1(
+		.clk(clk),
+		.rst(reset),
+        .stb(icpuReadStrobe & icpuPortId[4]),
+		.we(0),
+		.addr(icpuPortId[3]),
+        .data_out(keyboardDataOut),
+        .ps2_clk(keyboardPs2Clk),
+		.ps2_data(keyboardPs2Data)
+	);
+
 	//
 	// wiring
 	//
 
 	assign icpuInterrupt = 0;
-
+	assign icpuReadData = (icpuPortId[4] ? keyboardDataOut : textmodeDisplayDataOut);
 
 
 

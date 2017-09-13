@@ -12,3 +12,5 @@ verilog work textmode/textmode_display.v
 verilog work textmode/textmode_dspmem.v
 verilog work textmode/textmode_pixel.v
 verilog work textmode/textmode_timing.v
+verilog work kbd/kbd.v
+verilog work kbd/keyboard.v
