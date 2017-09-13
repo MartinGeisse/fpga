@@ -10,6 +10,7 @@ NET "vsync" LOC = "F14" | IOSTANDARD = LVTTL | DRIVE = 8 | SLEW = FAST;
 
 NET "serialPortDataIn" LOC = "B4" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8;
 NET "reset"  LOC = "A4"  | IOSTANDARD = LVCMOS33  | SLEW = FAST  | DRIVE = 8;
+NET "backwardsSerialPortDataOutNegated" LOC = "D5" | IOSTANDARD = LVCMOS33 | SLEW = FAST | DRIVE = 8;
 
 NET "displayModeSwitch" LOC = "N17" | IOSTANDARD = LVTTL | PULLUP ;
 

@@ -5,7 +5,8 @@
 module Gpu(clk, reset,
 		hsync, vsync, r, g, b, displayModeSwitch,
 		serialPortDataIn,
-		keyboardPs2Clk, keyboardPs2Data);
+		keyboardPs2Clk, keyboardPs2Data,
+		backwardsSerialPortDataOutNegated);
 
 	//
 	// ports
@@ -22,6 +23,7 @@ module Gpu(clk, reset,
 	input displayModeSwitch;
 	input keyboardPs2Clk;
 	input keyboardPs2Data;
+	output backwardsSerialPortDataOutNegated;
 
 
 	//
@@ -230,13 +232,31 @@ module Gpu(clk, reset,
 		.ps2_data(keyboardPs2Data)
 	);
 
+
+	//
+	// serial port (backwards direction)
+	//
+
+	wire[7:0] serbackDataOut;
+	wire backwardsSerialPortDataOut;
+	serback serback1(
+		.clk(clk),
+		.rst(reset),
+        .stb((icpuReadStrobe | icpuWriteStrobe) & icpuPortId[5]),
+		.we(icpuWriteStrobe),
+        .data_in(icpuWriteData),
+		.data_out(serbackDataOut),
+		.txd(backwardsSerialPortDataOut)
+	);
+
+
 	//
 	// wiring
 	//
 
 	assign icpuInterrupt = 0;
-	assign icpuReadData = (icpuPortId[4] ? keyboardDataOut : textmodeDisplayDataOut);
-
+	assign icpuReadData = (icpuPortId[4] ? keyboardDataOut : icpuPortId[5] ? serbackDataOut : textmodeDisplayDataOut);
+	assign backwardsSerialPortDataOutNegated = ~backwardsSerialPortDataOut;
 
 
 

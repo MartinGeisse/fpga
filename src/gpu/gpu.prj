@@ -5,6 +5,9 @@ verilog work external/kcpsm3.v
 verilog work ser/ser.v
 verilog work ser/rcvbuf.v
 verilog work ser/rcv.v
+verilog work serback/serback.v
+verilog work serback/xmtbuf.v
+verilog work serback/xmt.v
 verilog work display/VgaTiming.v
 verilog work display/Display.v
 verilog work textmode/textmode_chrgen.v
