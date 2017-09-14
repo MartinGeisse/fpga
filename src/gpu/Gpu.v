@@ -229,7 +229,7 @@ module Gpu(rawClk, reset,
 	end
 	
 	wire textmodeHsync, textmodeVsync, textmodeR, textmodeG, textmodeB;
-	wire[7:0] textmodeDisplayDataOut;
+	wire[15:0] textmodeDisplayDataOut;
 	textmode_display textmodeDisplay1(
 		.clk(clk),
 		.dsp_row(textmodeRowIndexRegister),
@@ -356,8 +356,8 @@ module Gpu(rawClk, reset,
 	assign icpuReadData = 
 		icpuPortId[4] ? keyboardDataOut :
 		icpuPortId[5] ? serbackDataOut :
-		icpuPortId[6] ? (icpuPortId[3] ? {7'd0, sdramInterfaceReady} : sdramInterfaceReadDataRegister[7:0]) :
-		textmodeDisplayDataOut;
+		icpuPortId[6] ? (icpuPortId[3] ? sdramInterfaceReadDataRegister[7:0] : {7'd0, sdramInterfaceReady}) :
+		textmodeDisplayDataOut[7:0];
 	assign backwardsSerialPortDataOutNegated = ~backwardsSerialPortDataOut;
 
 
