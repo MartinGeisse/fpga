@@ -2,18 +2,19 @@
 `timescale 1ns / 1ps
 
 
-module Gpu(clk, reset,
+module Gpu(rawClk, reset,
 		hsync, vsync, r, g, b, displayModeSwitch,
 		serialPortDataIn,
 		keyboardPs2Clk, keyboardPs2Data,
-		backwardsSerialPortDataOutNegated);
+		backwardsSerialPortDataOutNegated,
+		sdram_ck_p, sdram_ck_n, sdram_cke, sdram_cs_n, sdram_ras_n, sdram_cas_n, sdram_we_n, sdram_ba, sdram_a, sdram_udm, sdram_ldm, sdram_udqs, sdram_ldqs, sdram_dq);
 
 	//
 	// ports
 	//
 
-    input clk;
-    input reset;
+    input rawClk;
+    input reset; // TODO synchronize
     output hsync;
     output vsync;
     output r;
@@ -25,13 +26,41 @@ module Gpu(clk, reset,
 	input keyboardPs2Data;
 	output backwardsSerialPortDataOutNegated;
 
+    output sdram_ck_p;
+    output sdram_ck_n;
+    output sdram_cke;
+    output sdram_cs_n;
+    output sdram_ras_n;
+    output sdram_cas_n;
+    output sdram_we_n;
+    output[1:0] sdram_ba;
+    output[12:0] sdram_a;
+    output sdram_udm;
+    output sdram_ldm;
+    inout sdram_udqs;
+    inout sdram_ldqs;
+    inout[15:0] sdram_dq;
+
 
 	//
 	// common wiring declarations
 	//
 
 
+	//
+	// clocks
+	//
 
+	wire clk, ddrClk, ddrClk90, ddrClk180, ddrClk270, ddrClkOk;
+	ClockManager clockManager1(
+		.clk_in(rawClk),
+		.clk(clk),
+		.ddr_clk_0(ddrClk),
+		.ddr_clk_90(ddrClk90),
+		.ddr_clk_180(ddrClk180),
+		.ddr_clk_270(ddrClk270),
+		.ddr_clk_ok(ddrClkOk)
+	);
 
 
 
@@ -122,6 +151,8 @@ module Gpu(clk, reset,
 		.rxd(serialPortDataIn),
 		.ready(serialPortReady)
 	);
+
+
 
 	//
 	// wiring
@@ -251,11 +282,82 @@ module Gpu(clk, reset,
 
 
 	//
+	// SDRAM
+	//
+
+	wire accessSdramInterface;
+	assign accessSdramInterface = (icpuReadStrobe | icpuWriteStrobe) & icpuPortId[7];
+
+	reg sdramInterfaceStb, sdramInterfaceWe;
+	reg[25:2] sdramInterfaceAddressRegister;
+	reg[31:0] sdramInterfaceWriteDataRegister;
+	wire[31:0] sdramInterfaceReadData;
+	reg[31:0] sdramInterfaceReadDataRegister;
+	reg sdramInterfaceReady;
+	wire sdramInterfaceAck;
+	SdramInterface SdramInterface1(
+		.clk(clk),
+		.rst(reset),
+		.ddr_clk_0(ddrClk),
+		.ddr_clk_90(ddrClk90),
+		.ddr_clk_180(ddrClk180),
+		.ddr_clk_270(ddrClk270),
+		.ddr_clk_ok(ddrClkOk),
+		.stb(sdramInterfaceStb),
+		.we(sdramInterfaceWe),
+		.addr(sdramInterfaceAddressRegister),
+		.data_in(sdramInterfaceWriteDataRegister),
+		.data_out(sdramInterfaceReadData),
+		.ack(sdramInterfaceAck),
+		.sdram_ck_p(sdram_ck_p),
+		.sdram_ck_n(sdram_ck_n),
+		.sdram_cke(sdram_cke),
+		.sdram_cs_n(sdram_cs_n),
+		.sdram_ras_n(sdram_ras_n),
+		.sdram_cas_n(sdram_cas_n),
+		.sdram_we_n(sdram_we_n),
+		.sdram_ba(sdram_ba),
+		.sdram_a(sdram_a),
+		.sdram_udm(sdram_udm),
+		.sdram_ldm(sdram_ldm),
+		.sdram_udqs(sdram_udqs),
+		.sdram_ldqs(sdram_ldqs),
+		.sdram_dq(sdram_dq)
+	);
+	always @(posedge clk) begin
+		// This is not Wishbone compliant, but OK for the SDRAM interface: the stb signal is high only for one
+		// cycle. That cycle is delayed by one WRT the R/W pulse of the Pico, since the address and write-data
+		// also are. The latter are registered and stay constant during the whole operation, which the SDRAM
+		// interface needs.
+		sdramInterfaceStb <= accessSdramInterface;
+		if (accessSdramInterface) begin
+			sdramInterfaceWe <= icpuWriteStrobe;
+			sdramInterfaceAddressRegister[25:2] <= {17'd0, icpuPortId[6:0]};
+			if (icpuWriteStrobe) begin
+				sdramInterfaceWriteDataRegister <= {24'd0, icpuWriteData};
+			end else begin
+				sdramInterfaceWriteDataRegister <= 32'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+			end
+		end
+		if (sdramInterfaceAck) begin
+			sdramInterfaceReadDataRegister <= sdramInterfaceReadData;
+			sdramInterfaceReady <= 1;
+		 end else if (accessSdramInterface) begin
+			sdramInterfaceReady <= 0;
+		 end
+	end
+
+
+	//
 	// wiring
 	//
 
 	assign icpuInterrupt = 0;
-	assign icpuReadData = (icpuPortId[4] ? keyboardDataOut : icpuPortId[5] ? serbackDataOut : textmodeDisplayDataOut);
+	assign icpuReadData = 
+		icpuPortId[4] ? keyboardDataOut :
+		icpuPortId[5] ? serbackDataOut :
+		icpuPortId[6] ? (icpuPortId[3] ? {7'd0, sdramInterfaceReady} : sdramInterfaceReadDataRegister[7:0]) :
+		textmodeDisplayDataOut;
 	assign backwardsSerialPortDataOutNegated = ~backwardsSerialPortDataOut;
 
 
