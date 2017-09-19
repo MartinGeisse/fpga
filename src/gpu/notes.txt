@@ -1,0 +1,169 @@
+
+RAM-Controller hat einen internen Column-Adress-Counter. Dieser entspricht (in den niederen Bits) im RAMDAC auch der Zieladresse im BlockRAM,
+wo die Daten hingehen. In allen anderen Situationen ist dieser Counter egal, da die Column-Adresse selten der externen Adresse entspricht.
+(Man könnte das teilweise forcieren, aber nicht immer, also wozu...) Daher kann, wenn der RAMDAC teil des RAM-Controllers ist, dieser Counter
+rein intern bleiben.
+
+Externe Operationen: Burst-Read, Burst-Write, Parametrisiert mit der Startadresse und dann Daten. Allerdings darf hier keine RAM-Zeilengrenze
+überschritten werden. Das ist einfach, wenn Screen-/Textur-Zeilen immer aligned an der RAM-Zeilen-Adresse sind, was einfach ist. Schwierig
+ist aber auch dann, zu wissen, wann dann doch die RAM-Zeile gewechselt werden soll, weil man das ja nicht bei jeder Bildschirmzeile immer mit tun will.
+--> das ist alles nicht so wild. Das RAS-Delay und Dauer eines PRECHARGE sind nicht so dramatisch -- man will es nur nicht bei jedem Pixel haben.
+Beim RAMDAC passiert das eh nicht. 
+
+Bei nicht-RAMDAC wäre es evtl doch möglich, zu erkennen, wann eine neue Row geöffnet werden muss. Das ist ja im Prinzip nur das Carry des
+Column-Address-Counter (bzw. "ungleich" eines einzelnen Adressbits). 
+
+Als Luxus wäre es auch möglich, einfach generell ein "ungleich" der Zeilenadresse zu erkennen. Dann muss sich der Client nur noch um die Abfolge
+von Zeilen im Sinne der Performance, nicht mehr im Sinne der Korrektheit, machen. ALLERDINGS: Hier gibt es einen Konflikt: Das erkennen einer
+Änderung in der Zeilenadresse entspricht einem ständigen neu-Übergeben der Zeilenadresse, während der Interne Zähler "von innen heraus"
+die Zeilenadresse ändern würde. Letzteres klingt "natürlicher" und braucht keinen externen Zähler. Die Zeilenadresse und die Spalten-Startadresse
+werden dann einmalig beim Burst-Start übergeben.
+
+Externes Interface für (RAM-Controller + RAMDAC):
+- clk*, reset
+- VGA signals
+- Startadresse (Zeile und Spalte)
+- Command (start read burst, start write burst, continue burst, NOP / precharge / refresh)
+- ReadData, WriteData
+- ReadAck, WriteAck
+
+read data sind jeweils ein Paar von 16-Bit-Words.
+
+write data sind jeweils ein Paar von (16-Bit-Word, Byte Mask)-Paaren.
+
+v1: refresh when idle; no bank-level parallelism
+
+Read-Burst:
+- Startadresse + Command (start read burst)
+- ...
+- read data + read ack; respond with continue burst
+- ...
+- read data + read ack; respond with continue burst
+- ... 
+- read data + read ack; respond with stop burst
+--> 
+Einfach zu realisieren -- read ack ist CE für externen Speicher sowie Adresszähler für den externen Speicher.
+- der Adresszähler des externen Speichers ist losgelöst von dem Zähler für den internen Speicher. Das soll im
+    Zweifel das Synthesetool zusammenlegen.
+
+Write Burst:
+- Startadresse + Command (start write burst) + write data
+- ...
+- write ack; respond with continue burst + write data
+- ...
+- write ack; respond with continue burst + write data
+- ...
+- write ack; respond with stop burst
+-->
+Hier ist die Abfolge in Clocks noch unklar, da ein write ack nicht im selben Zyklus mit den nächsten Daten beantwortet werden kann.
+Es braucht schon Optimierungen, um das im *nächsten Zyklus zu tun (da BlockRAM getaktet ist, und der externe Adresszähler auch!)
+-->
+Unter Ausnutzung, dass die Daten von einem getakteten Speicher kommen (!):
+- clock edge 0
+    A <- S
+- clock edge 1
+    D <- M[A];
+    A <- A + 1;
+- clock edge 2
+    start write burst (VRAM-Adr, D)
+... (0+ edges bis ACK)
+    D <- M[A];
+    A <- A + 1;
+... (1+ edges bis ACK)
+    D <- M[A];
+    A <- A + 1;
+... (1+ edges bis ACK)
+    D <- M[A];
+    A <- A + 1;
+(...)
+    D <- M[A];
+    A <- A + 1;
+... (1+ edges bis ACK)
+Ende???
+
+Einfacher wäre es, die Kommunikation mit dem RAM-Controller nicht auf Zyklusebene, sondern als Event-Austausch zu definieren.
+- Dann sitzen evtl mehrere Register in Folge, z.B. das BRAM-Ausgaberegister und ein "Auffangregister" des RAM-Controllers.
+    Das ist aber eh so, da dazwischen ein Mux für verschiedene Clients des RAM-Controllers sitzt; dieser kann nicht zwischen
+    dem BRAM und dessen Ausgaberegister sitzen, da der FPGA nicht so gebaut ist.
+
+Außerdem: Realistisch gesehen werden die meisten Speicherworte direkt, sogar zwei pro Clock bzw. vier pro 50MHz-Clock, geschrieben!
+
+In v1 ist ein extra-Auffangregister das kleinste Problem. Deshalb: "continue burst" + weiteres Datenwort, und dieses landet erst mal in
+einem Auffangregister.
+
+Prinzipiell werden Adresse, Daten und Command gleichzeitig angelegt, und das erste Datenwort irgendwann mit ACK quittiert. Mit
+der Edge, wo ACK=1, wird das Datenwort ins Auffangregister geladen. Danach muss es nicht mehr anliegen. Danach können weitere Worte folgen.
+Wenn alles fertig ist, wird an der nächsten Edge das Command "stop burst" und kein Datenwort mehr angelegt; dieses wird dann auch wieder
+per ACK quittiert und der Burst ist vorbei.
+
+Praktisch kann man unter beachtung der entsprechenden Zeiten auch das erste Datenwort verzögert anlegen. Das wird etwas schwer zu
+dokumentieren sein, aber von der Sache her ist es eher einfach. Das gibt dem Client ggf. etwas Zeit. Wichtig ist, dass Command und
+Startadresse sich nicht ändern. (Wobei für die Spalten-Startadresse etwas ähnliches definiert werden könnte).
+
+Wie werden die Commands codiert? Welche Commands gibt es überhaupt?
+- nop
+- start write burst
+- start read burst
+- continue (R/W) burst
+- stop (R/W) burst
+
+Für die Codierung ist wichtig, ob ein Burst von einem neuen Burst gefolgt werden kann. Das wäre an sich schön. Demzufolge muss
+"start burst" und "continue burst" anders codiert werden. Stop burst heißt dann "stop ohne Folgeburst" und kann mit NOP
+gleich codiert werden. Demzufolge:
+- new read burst
+- new write burst
+- continue burst
+- stop/nop
+
+Allerdings ist die Frage, ob eine so "enge" codierung sinnvoll ist. Hier müssen keine Pins gespart werden, sondern eher decoder-Logik.
+Mit 3 Bits wäre einfacher zu decoden:
+- read/write
+- new burst
+- stop burst
+
+Dabei ist "read/write" nur im Falle von "new burst" wichtig; "new burst" und "stop burst" können die drei Zustände 00 (continue), 10 (new)
+und 01 (stop) annehmen, 11 ist nicht erlaubt. read/write müssen nach dem "new" nicht stabil bleiben; bei einem Übergang zu einem neuen
+back-to-back Burst könnten sie sich ändern aber intern müsste der alte Wert erhalten bleiben, also muss dieses Bit sowieso intern gespeichert
+werden.
+
+---------------------------------------------------------------------------------
+
+Neuer Versuch: Externes Interface für (RAM-Controller + RAMDAC):
+- clk*, reset
+- VGA signals
+- Command: new burst, read/write, stop burst
+- Startadresse (Zeile und Spalte)
+- ReadData, WriteData
+- ReadAck (???), WriteAck
+
+Wie funzt Read-ACK?
+- Der Client kann kein ACK geben -- der RAM-Controller liefert die Daten und in diesem Moment müssen sie auch entgegengenommen werden. Hier gibt es
+    also nur ein ACK aus dem RAM-Controller heraus.
+- Der Client entscheidet per Command Bits, ob weitere Words gelesen werden sollen. Allerdings ist da eine Latenz dazwischen: Wenn per Command Bits nicht mehr
+    gelesen wird, dann laufen immer noch Datenworte rein.
+
+Mögliche Lösungen:
+- Beim Lesen wird der Lesebefehl ACK'd, aber die Daten kommen erst später. Dann muss der Client einen Zähler mitlaufen lassen, um die richtige Anzahl an
+    Clockedges lang den Lesebefehl zu senden.
+- Beim Lesebefehl wird die Burst-Länge mitgesendet. Warum dann nicht auch beim Schreibbefehl?
+--->
+Angenommen, als Teil des Befehls wird die Startadresse und die Burst-Länge gesendet. Dann könnte man einen Down-Counter benutzen (Start: Burstlänge, Ende: 0),
+oder aber einen Up-Counter (Start: 0, Ende: Burst-Länge) und letzteren auch ausgeben. Das wäre eine Verallgemeinerung des Zählers aus dem RAMDAC. Klingt
+interessant. Ein continue/stop burst ist dann nicht mehr nötig (aber als Erweiterung nötig, nicht in v1), allerdings wird ein "new burst" erst nach Ende des
+Burst entgegengenommen. Es braucht also zuallererst ein "command ACK" bzw. ein "end of burst" -- letzteres ist gut, das kann der Client eh brauchen.
+Command ACK ist auch gut bei mehreren clients; bei nur einem Client ist command ACK immer dann, wenn kein command aktuell läuft oder aber dieses fertig wird
+(end of burst). WriteAck ist nötig, wenn ein automatischer wechsel in die nächste RAM-Zeile gemacht werden soll, ansonsten werden zwei Words pro Cycle
+garantiert entgegengenommen. "read ack" ist (da push) eher ein "read strobe".
+
+Versuch:
+- clk*, reset
+- VGA signals
+- Command: start burst, read/write, Startadresse (Zeile und Spalte), Burstlänge
+- Command ACK
+- WriteData, WriteDataAck
+    (erstes Write-Word frühestens im Cycle nach Command ACK)
+- ReadData, ReadDataStrobe
+- Burst Index
+    - R: gültig mit ReadDataStrobe und passend zu ReadData
+    - W: Nach Command Start gültig und passend jeweils zum kommenden WriteDataAck (TODO: noch um 1 versetzt bei BlockRAM)
+- Burst Finish (im selben Cycle wie das letzte WriteAck bzw. ReadStrobe)
