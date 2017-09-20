@@ -218,3 +218,33 @@ welcher nicht nach außen geht und ein Down-Counter mit 0-Vergleicher ist.
 Dasselbe gilt für den RAMDAC, da auch hier die BRAM-Adresse versetzt zum Burst-Ende-Detektor ist.
 
 ---> das ist ein einfacher Ansatz.
+(ganz stimmt die Argumentation nicht, da der BRAM dual-ported ist und deshalb der genannte Mux eh da ist.
+Aber einfacher ist es trotzdem; den Mux/Dualport kann man dann anderweitig nutzen und zeitlich versetzt
+sind die Adressen ja trotzdem.)
+
+Versuch:
+- clk*, reset
+- VGA signals
+- Command signals: start burst (enable bit), read/write (bit), Startadresse (Zeile und Spalte), Burstlänge
+- Command ACK
+- WriteData, WriteDataAck (erstes Write-Word frühestens M Cycles nach Command ACK erwartet)
+- ReadData, ReadDataStrobe (erstes Read-Word mindestens N Cycles nach Command ACK verfügbar)
+- Burst Finish (im selben Cycle wie das letzte WriteAck bzw. ReadStrobe)
+    - wird nicht von jedem Client benötigt, da diesem die Burstlänge ja bekannt ist
+
+Spezielle Signale für die Initialisierung:
+- Clock-enable (schreibbares Register) -> dauer-enable nach init
+- Chip-select (schreibbares Register) -> dauer-select nach init
+--> die beiden müssten auch gleichzeitig "an" gehen können laut Doku
+- Möglichkeit, auto-refresh zu aktivieren. Das sollte auch im normalen Betrieb möglich sein.
+    Beim Init darf es aber nicht der Normalzustand sein.
+- Möglichkeit zum Precharge-All. Unklar ist, ob im Normalbetrieb einfach immer ein Precharge-All
+    passiert. Da kein bank-level pipelining stattfinden soll, ist das möglich, wenn es nicht
+    länger as ein precharge dauert.
+
+Auto precharge scheint nichts zu bringen außer ggf. die Logik zu vereinfachen. Vor allem keinen
+Performance-Vorteil.
+
+Refresh: Hier reicht ein Signal, ob ein Refresh bei nächster Gelegenheit stattfinden soll. Der RAMDAC
+setzt dieses "oft genug" (was das genau heißt habe ich noch nicht verstanden; der Teil der Doku ist
+etwas schwierig).
