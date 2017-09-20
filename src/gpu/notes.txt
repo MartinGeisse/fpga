@@ -155,6 +155,13 @@ Command ACK ist auch gut bei mehreren clients; bei nur einem Client ist command 
 (end of burst). WriteAck ist nötig, wenn ein automatischer wechsel in die nächste RAM-Zeile gemacht werden soll, ansonsten werden zwei Words pro Cycle
 garantiert entgegengenommen. "read ack" ist (da push) eher ein "read strobe".
 
+Der Up-Counter macht mehr Sinn. Zwar ist es in Hardware aufwendiger, einne Up-Counter mit einem ladbaren Wert zu vergleichen,
+als einen Down-Counter mit 0 zu vergleichen (da 0 nicht veränderbar ist -- weniger LUTs nötig). Aber mit einem Down-Counter
+muss die externe Adresse bzw. die RAMDAC-Buffer-Adresse trotzdem erzeugt werden, also würde das nur dazu führen, dass extern
+ein weiterer Up-Counter definiert wird. Dann hat man einen Up-Counter, einen Down-Counter und einen 0-Vergleicher statt
+eines Up-Counters und eines ladbaren Vergleichers. Letzteres kann man als zwei Implementierungsvarianten des
+Burst-Ende-Detektors verstehen, wenn man beide gedanklich in den RAM-Controller packt.
+
 Versuch:
 - clk*, reset
 - VGA signals
@@ -167,3 +174,47 @@ Versuch:
     - R: gültig mit ReadDataStrobe und passend zu ReadData
     - W: Nach Command Start gültig und passend jeweils zum kommenden WriteDataAck (TODO: noch um 1 versetzt bei BlockRAM)
 - Burst Finish (im selben Cycle wie das letzte WriteAck bzw. ReadStrobe)
+
+---
+
+Das Problem, welches mit dem letzten Ansatz gelöst werden sollte, war:
+    "Beim Lesen wird der Lesebefehl ACK'd, aber die Daten kommen erst später. Dann muss der Client einen Zähler
+    mitlaufen lassen, um die richtige Anzahl an Clockedges lang den Lesebefehl zu senden."
+
+Dieser Zähler sollte auch gleich mit ausgegeben werden, um keine zwei Zähler bauen zu müssen. Nur: diese beiden Zähler
+werden in der Praxis nicht gleich sein! Sie sind um wenige Clocks versetzt: Der eine Zähler muss rechtzeitig aufhören,
+Reads zu senden, der andere muss externe Adressen etwas verzögert anlegen.
+--> DOCH, man könnte sie gleichsetzen. Dazu muss der Zähler um eine Anzahl Takte im negativen starten, die der
+    CAS latency entspricht.
+--> NEIN, denn dann müsste der Zähler ja trotzdem früher aufhören.
+
+Es würde gehen, wenn man vom externen Client fordert, auch einen entsprechend kleineren Wert für die Burst-Länge zu senden.
+Beispiel: CL = 2, dann startet der Zähler bei -2 und der Client muss als Parameter (Burstlänge - 2) senden. Das ist
+umständlich, aber vor allem macht es den Client abhängig von der konkreten CL.
+
+All das spricht dafür, den externen und internen Zähler nicht zusammenzulegen -- nicht mal für den RAMDAC. Stattdessen
+sollte es zwei verschiedene Zähler geben. Auf der anderen Seite kann der externe Zähler immer noch Teil des
+RAM-Controllers sein (also kein extern liegender Zähler, sondern ein intern liegender Zähler, der externe Adressen
+erzeugt). Dann kann dieser ohne Vergleicher zählen und der interne Zähler kann ein Down-Counter mit 0-Vergleicher
+sein.
+
+Wie sieht dann die definition für den "burst index für extern", also den Wert des intern liegenden Zählers für externe
+Adressen, aus?
+- R: gültig mit ReadDataStrobe und passend zu ReadData -- wie vorher und jetzt auch wirklich realisierbar
+- W: ...
+
+-----
+
+Es gibt noch einen weiteren Faktor: Die Zähler für externe Speicher von Clients sollen i.A. nicht über Muxe
+an diese Speicher angeschlossen werden. Das müsste man aber tun, wenn dieser Speicher dann (während der
+RAM-Controller nicht angesprochen wird) von diesen Clients benutzt wird, und der Zähler aus dem RAM-Controller
+gleichzeitig was ganz anderes tut. Außerdem hat der client in dieser Situation ja eine andere Quelle über den Mux
+angeschlossen, welche vermutlich dann doch ein weiterer, Client-spezifischer Zähler ist.
+
+Fazit: Ein gemeinsam benutzter Index-Zähler für alle Clients ist Murx. Die Client-Adresse sollten die
+Clients intern erzeugen. Ein gemeinsamer Zähler ist nur der Burst-Ende-Detector innerhalb des RAM-Controllers,
+welcher nicht nach außen geht und ein Down-Counter mit 0-Vergleicher ist.
+
+Dasselbe gilt für den RAMDAC, da auch hier die BRAM-Adresse versetzt zum Burst-Ende-Detektor ist.
+
+---> das ist ein einfacher Ansatz.
