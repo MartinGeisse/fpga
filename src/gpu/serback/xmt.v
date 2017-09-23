@@ -15,8 +15,8 @@ module xmt(clk, reset, load, empty, parallel_in, serial_out);
     input [7:0] parallel_in;
     output serial_out;
 
-  localparam SERIAL_PORT_BIT_DURATION_CLOCKS = (50 * 1000 * 1000) / 2000; // speed is 2 kbaud
-
+  localparam SERIAL_PORT_BIT_DURATION_CLOCKS = (50 * 1000 * 1000) / 10000; // speed is 10 kbaud
+  
   reg [3:0] state;
   reg [8:0] shift;
   reg [31:0] count;
