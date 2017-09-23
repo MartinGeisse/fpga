@@ -307,12 +307,18 @@ void drawHorizontallyCutTriangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t x3,
       rightXFraction += denominator;
       rightX--;
     }
-    
+
+    /*
     for (uint8_t x = leftX; x <= rightX; x++) {
       Serial.write(2);
       Serial.write(x);
       Serial.write(y);
     }
+    */
+    Serial.write(3);
+    Serial.write(leftX);
+    Serial.write(y);
+    Serial.write(rightX);
 
     if (drawHorizontalEdge) {
       y += deltaY;
@@ -334,25 +340,22 @@ void drawTriangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3, ui
   SORT_INTEGERS_WITH_ATTACHMENTS(y2,x2,y3,x3);
   SORT_INTEGERS_WITH_ATTACHMENTS(y1,x1,y2,x2);
   if (y1 == y2) {
-    Serial.write(0);
-    Serial.write(6);
     drawHorizontallyCutTriangle(x3, y3, x1, x2, y1, -1, y3 - y1, true);
   } else if (y2 == y3) {
-    Serial.write(0);
-    Serial.write(6);
     drawHorizontallyCutTriangle(x1, y1, x2, x3, y2, 1, y2 - y1, true);
   } else {
     int16_t x4 = y2 - y1;
     x4 *= x3 - x1;
     x4 /= y3 - y1;
     x4 += x1;
-    Serial.write(0);
-    Serial.write(4);
     drawHorizontallyCutTriangle(x1, y1, x2, x4, y2, 1, y2 - y1, true);
-    Serial.write(0);
-    Serial.write(2);
     drawHorizontallyCutTriangle(x3, y3, x2, x4, y2, -1, y3 - y2, false);
   }
+}
+
+void drawQuad(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2, uint8_t x3, uint8_t y3, uint8_t x4, uint8_t y4) {
+  drawTriangle(x1, y1, x2, y2, x3, y3);
+  drawTriangle(x1, y1, x3, y3, x4, y4);
 }
 
 void setup() {
@@ -454,7 +457,9 @@ void setup() {
   Serial.write(0);
   Serial.write(6);
   // drawTriangle(20 + random(10), random(10), 20 + random(10), random(10), 20 + random(10), random(10));
-  drawTriangle(60, 5, 20, 100, 100, 50);
+  // drawTriangle(60, 5, 20, 100, 100, 50);
+
+  drawQuad(20, 20, 100, 30, 80, 100, 10, 80);
 
 }
 
@@ -464,14 +469,5 @@ void loop() {
     c = Serial.read();
     showKeyboardOutput(c);
   }
-/*
-  Serial.write(0);
-  Serial.write(1);
-  Serial.write(1);
-  
-  drawTriangle(20 + random(10), random(10), 20 + random(10), random(10), 20 + random(10), random(10));
-
-  delay(2000);
-*/
 }
 
