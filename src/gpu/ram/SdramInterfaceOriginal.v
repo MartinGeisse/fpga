@@ -503,6 +503,7 @@ begin
 				if(init_wait_count == INIT_CLK_EN_WAIT)
 				begin
 					sd_CKE_O <= 1;				// Wake up the SDRAM
+					sd_CS_O <= 0;
 				end
 			end
 			// ** Precharge command ***************************************
@@ -512,12 +513,10 @@ begin
 				sd_RAS_O <= 0;
 				sd_CAS_O <= 1;
 				sd_WE_O <= 0;
-				sd_CS_O <= 0;
 				sd_A_O[10] <= 1;				// Command for precharge all
 			end
 			SD_PRECHG_ALL1:
 			begin
-				sd_CS_O <= 1;
 				sd_RAS_O <= 1;
 				sd_CAS_O <= 1;
 				sd_WE_O <= 1;
@@ -530,12 +529,10 @@ begin
 				sd_RAS_O <= 0;
 				sd_CAS_O <= 0;
 				sd_WE_O <= 0;
-				sd_CS_O <= 0;
 				sd_A_O[12:0] <= mode_reg;
 			end
 			SD_LD_MODE1:
 			begin
-				sd_CS_O <= 1;
 				sd_RAS_O <= 1;
 				sd_CAS_O <= 1;
 				sd_WE_O <= 1;					// Load Mode takes 12nS
@@ -548,12 +545,11 @@ begin
 				sd_RAS_O <= 0;
 				sd_CAS_O <= 0;
 				sd_WE_O <= 1;
-				sd_CS_O <= 0;
 				wait_count <= REFRESH_WAIT;
 			end
 			SD_AUTO_REF1:
 			begin
-				sd_CS_O <= 1;					// Issue NOP during wait
+				// Issue NOP during wait
 				sd_RAS_O <= 1;
 				sd_CAS_O <= 1;
 				sd_WE_O <= 1;
@@ -575,7 +571,6 @@ begin
 				sd_RAS_O <= 0;
 				sd_CAS_O <= 1;
 				sd_WE_O <= 1;
-				sd_CS_O <= 0;
 				sd_BA_O[1:0] <= wADR_I[25:24];
 				sd_A_O[12:0] <= wADR_I[23:11];
 				wait_count <= ACCESS_WAIT;
@@ -586,13 +581,13 @@ begin
 			begin
 				if(wait_count[5] != 1)
 				begin
-					sd_CS_O <= 1;			// NOP command during access wait		
+					// NOP command during access wait		
 					sd_RAS_O <= 1;
 					sd_CAS_O <= 1;
 					sd_WE_O <= 1;
 				end else
 				begin
-					sd_CS_O <= 0;				// Access column 
+					// Access column 
 					sd_RAS_O <= 1;
 					sd_CAS_O <= 0;
 					sd_WE_O <= 1;
@@ -608,7 +603,7 @@ begin
 			begin								// Wait until DQS signal there is data
 				if(wait_count[5] != 1)
 				begin
-					sd_CS_O <= 1;				// NOP command during access wait		
+					// NOP command during access wait		
 					sd_RAS_O <= 1;
 					sd_CAS_O <= 1;
 					sd_WE_O <= 1;
@@ -642,7 +637,6 @@ begin
 				sd_RAS_O <= 0;
 				sd_CAS_O <= 1;
 				sd_WE_O <= 1;
-				sd_CS_O <= 0;
 				sd_BA_O[1:0] <= wADR_I[25:24];
 				sd_A_O[12:0] <= wADR_I[23:11];
 				D_wr_reg <= wDAT_I;
@@ -654,13 +648,13 @@ begin
 			begin
 				if(wait_count[5] != 1)
 				begin
-					sd_CS_O <= 1;			// NOP command during access wait		
+					// NOP command during access wait		
 					sd_RAS_O <= 1;
 					sd_CAS_O <= 1;
 					sd_WE_O <= 1;
 				end else
 				begin
-					sd_CS_O <= 0;			// Access column 
+					// Access column 
 					sd_RAS_O <= 1;
 					sd_CAS_O <= 0;
 					sd_WE_O <= 0;
@@ -676,7 +670,6 @@ begin
 				sd_state <= SD_WR_LATCH;
 				DQS_state <= 1;			// Start with DQS low
 				D_oe <= 1;				// Drive the data bus
-				sd_CS_O <= 1;
 				sd_RAS_O <= 1;
 				sd_CAS_O <= 1;
 				sd_WE_O <= 1;
@@ -709,7 +702,6 @@ begin
 				sd_RAS_O <= 1;				// Set for NOP by default
 				sd_CAS_O <= 1;
 				sd_WE_O <= 1;
-				sd_CS_O <= 1;				
 				if(init_state != SI_DONE)	// If still in init cycle, go back and work
 					sd_state <= SD_INIT;
 				else if(wSTB_I && !wWE_I)				// Start of a read command
