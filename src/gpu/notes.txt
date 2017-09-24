@@ -224,7 +224,6 @@ sind die Adressen ja trotzdem.)
 
 Versuch:
 - clk*, reset
-- VGA signals
 - Command signals: start burst (enable bit), read/write (bit), Startadresse (Zeile und Spalte), Burstlänge
 - Command ACK
 - WriteData, WriteDataAck (erstes Write-Word frühestens M Cycles nach Command ACK erwartet)
@@ -238,9 +237,19 @@ Spezielle Signale für die Initialisierung:
 --> die beiden müssten auch gleichzeitig "an" gehen können laut Doku
 - Möglichkeit, auto-refresh zu aktivieren. Das sollte auch im normalen Betrieb möglich sein.
     Beim Init darf es aber nicht der Normalzustand sein.
+    - refresh strobe
+    - refresh finished (eigentlich nicht nötig, der init-code kann auch entsprechend lange warten)
 - Möglichkeit zum Precharge-All. Unklar ist, ob im Normalbetrieb einfach immer ein Precharge-All
     passiert. Da kein bank-level pipelining stattfinden soll, ist das möglich, wenn es nicht
     länger as ein precharge dauert.
+    - precharge strobe
+    - precharge finished (eigentlich nicht nötig, der init-code kann auch entsprechend lange warten)
+- Möglichkeit zum load mode register
+    - LMR strobe
+    - LMR finished (eigentlich nicht nötig, der init-code kann auch entsprechend lange warten)
+
+Die diversen Finished-Signale sind von daher nicht nötig, dass bei einem vorliegenden Folgebefehl ja auch ein
+entsprechendes ACK kommt -- dieses ACK ist das, woran der Client *eigentlich* interessiert ist!
 
 Auto precharge scheint nichts zu bringen außer ggf. die Logik zu vereinfachen. Vor allem keinen
 Performance-Vorteil.
@@ -262,3 +271,48 @@ RAM-Refresh vs. VGA Timing:
 - 31430 * 64 / 1000 = 2011,52 Zeilen / Refresh-Zyklus
 - 8192 Refreshes / Refresh-Zyklus
 - 4,073 Refreshes / Zeile --> aufgerundet auf 5 Refreshes pro Zeile
+
+Nächster Schritt: State-Machine spezifizieren (erst ohne Initialisierung und RAMDAC und refresh, dann mit, soweit Teil dieses Controllers)
+
+States:
+- idle
+- refresh-command (*)
+- Befehlsausführung
+    - sending RAS
+    - sending CAS
+    - read
+        - waiting for data
+        - receiving data
+        - final wait
+    - write
+        - sending data
+        - final wait
+    - closing row (precharge all)
+- Initialisierung
+    - losgelöstes PRECHARGE ALL (spezi ist unklar darüber, ob das direkt nach dem clock-enable passieren muss, aber das Verständnis sagt
+        nein, kann auch ein paar clocks später)
+    - load mode register (und auch extended, die beiden unterscheiden sich in der Bank-Adresse; Registerinhalt in Adressbits)
+        --> hier muss später genau geschaut werden, wo genau zwischen Modereg und Adressbits gemuxt wird
+        --> dynamisch bestimmte (nicht-konstante) LMR-Bits
+            - DLL reset bit
+            - schalter zwischen normal / ext mode reg sowie den entsprechenden konstanten Daten
+
+Zusätzliche Register:
+- R/W flag
+- Wartezähler vor dem nächsten Zustandsübergang
+- Adressregister (inkl. Zähler)
+- RemainingBurstLength (inkl. down-counter mit 0-Vergleich)
+- Lesedatenregister (?) <-- hängt von DDR-Logik ab
+- Schreibdatenregister (?) <-- hängt von DDR-Logik ab
+
+Neuer Versuch für die Ports:
+- clk*, reset
+- startup (einmaliges synchrones enable, um CKE und CS zu laden --> per Picoblaze-Schreibbefehl)
+- Normal Command signals: start burst (enable bit), read/write (bit), Startadresse (Zeile und Spalte), Burstlänge
+- Special Command signals: start auto-refresh, start precharge, start LMR (haben Vorrangreihenfolge und haben alle
+    Vorrang vor normal command)
+- Command ACK
+- WriteData, WriteDataAck (erstes Write-Word frühestens M Cycles nach Command ACK erwartet)
+- ReadData, ReadDataStrobe (erstes Read-Word mindestens N Cycles nach Command ACK verfügbar)
+- Burst Finish (im selben Cycle wie das letzte WriteAck bzw. ReadStrobe)
+    - wird nicht von jedem Client benötigt, da diesem die Burstlänge ja bekannt ist
