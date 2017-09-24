@@ -248,3 +248,17 @@ Performance-Vorteil.
 Refresh: Hier reicht ein Signal, ob ein Refresh bei nächster Gelegenheit stattfinden soll. Der RAMDAC
 setzt dieses "oft genug" (was das genau heißt habe ich noch nicht verstanden; der Teil der Doku ist
 etwas schwierig).
+
+------------------------------------------------------------------------------------------------
+
+RAM-Refresh vs. VGA Timing: 
+- 640x400 ist der richtige Mode, da 16:10, sonst sind die Pixel nicht quadratisch bzw. nicht den Monitorpixeln angepasst
+- Timing siehe http://tinyvga.com/vga-timing/640x400@70Hz (70 Hz, 25 MHz Pixel Clock)
+- Weitere Timing-Parameter werden nicht nach Hz, sondern nach den Zeilen/Spalten-Angaben berechnet. Diese beiden
+    Rechenwege liefern unterschiedliche Ergebnisse! (D.h. die Angaben auf der Seite sind vermutlich falsch/ungenau)
+- H: 640, 16, 96, 48 = 800 (neg)
+- V: 400, 12, 2, 35 = 449 (pos)
+- 449*70 = 31430 Zeilen / s
+- 31430 * 64 / 1000 = 2011,52 Zeilen / Refresh-Zyklus
+- 8192 Refreshes / Refresh-Zyklus
+- 4,073 Refreshes / Zeile --> aufgerundet auf 5 Refreshes pro Zeile
