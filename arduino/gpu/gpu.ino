@@ -8,105 +8,6 @@
 #define SORT_INTEGERS(a,b)   if (a > b) {SWAP_INTEGERS(a, b);}
 #define SORT_INTEGERS_WITH_ATTACHMENTS(a,a2,b,b2)   if (a > b) {SWAP_INTEGERS(a, b);SWAP_INTEGERS(a2, b2);}
 
-const char *pattern[] = {
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "        ********  ******  ******  ********                                                                                      ",
-  "        ********  ******  ******  ********                                                                                      ",
-  "           **     **      **         **                                                                                         ",
-  "           **     ******  ******     **       *                                                                                 ",
-  "           **     ******  ******     **                                                                                         ",
-  "           **     **          **     **                                                                                         ",
-  "           **     ******  ******     **                                                                                         ",
-  "           **     ******  ******     **                                                                                         ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-  "                                                                                                                                ",
-};
-
 uint8_t sineTable[] = {
   30,
   30,
@@ -308,13 +209,6 @@ void drawHorizontallyCutTriangle(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t x3,
       rightX--;
     }
 
-    /*
-    for (uint8_t x = leftX; x <= rightX; x++) {
-      Serial.write(2);
-      Serial.write(x);
-      Serial.write(y);
-    }
-    */
     Serial.write(3);
     Serial.write(leftX);
     Serial.write(y);
@@ -405,43 +299,6 @@ void setup() {
   Serial.write(1);
   Serial.write(2);
   Serial.write(10);
-*/
-
-  // draw pattern
-  /*
-  Serial.write(0);
-  Serial.write(2);
-  for (int x=0; x<128; x++) {
-    for (int y=0; y<96; y++) {
-      if (pattern[y][x] != ' ') {
-        Serial.write(2);
-        Serial.write(x);
-        Serial.write(y);
-      }
-    }
-  }
-  */
-
-/*
-  Serial.write((uint8_t)0);
-  Serial.write((uint8_t)0);
-  Serial.write((uint8_t)0);
-  Serial.write((uint8_t)'A');
-
-  Serial.write((uint8_t)0);
-  Serial.write((uint8_t)1);
-  Serial.write((uint8_t)0);
-  Serial.write((uint8_t)'b');
-
-  Serial.write((uint8_t)0);
-  Serial.write((uint8_t)2);
-  Serial.write((uint8_t)0);
-  Serial.write((uint8_t)'C');
-*/
-/*
-  for (int i=0; i<90; i++) {
-    showKeyboardOutput(i);
-  }
 */
 
   Serial.write(0);
