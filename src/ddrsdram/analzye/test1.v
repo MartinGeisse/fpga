@@ -1,7 +1,27 @@
 
-`timescale = 1ns/100ps
+`timescale 1ns/100ps
 
 module test1();
+
+    // simulation control
+    initial begin
+
+        // check output clock generation
+        // $monitor("%b, %b, %b, %b, %b -- %b, %b", ddr_clk_0, ddr_clk_90, ddr_clk_180, ddr_clk_270, ddr_clk_ok, sd_ck_p, sd_ck_n);
+        // #15000;
+
+        // check clock-enable generation
+        // $monitor("%d: %b / %d, %d", $time, sd_cke_o, dut.sd_state, dut.init_state);
+        // #15_000_000;
+
+        // check periodic refresh commands while idle after startup
+        @(dut.init_state === 8);
+        @(dut.sd_state == 0);
+        $monitor("%d: %d / CSn = %b, RASn = %b, CASn = %b, WEn = %b", $time, dut.sd_state, sd_cs_o, sd_ras_o, sd_cas_o, sd_we_o);
+        #10_000_000;
+
+        $finish;
+    end
 
     // clocks
     reg ddr_clk_0, ddr_clk_90, ddr_clk_180, ddr_clk_270, ddr_clk_ok;
@@ -23,15 +43,6 @@ module test1();
         ddr_clk_270 <= ~ddr_clk_270;
     end
 
-    // inputs from RAM chip (quiet for now)
-    reg[15:0] sd_d_io;
-    reg sd_udqs_io, sd_ldqs_io;
-    initial begin
-        sd_d_io <= 0;
-        sd_udqs_io <= 0;
-        sd_ldqs_io <= 0;
-    end
-
     // outputs to RAM chip (these are tested here)
 	wire sd_ck_p;
 	wire sd_ck_n;
@@ -45,6 +56,10 @@ module test1();
 	wire sd_cs_o;
 	wire sd_cke_o;
 
+    // I/O wires to/from RAM chip
+    wire[15:0] sd_d_io;
+    wire sd_udqs_io, sd_ldqs_io;
+
     // Wishbone interface (quiet for now)
     wire[25:2] wadr_i = 0;
     wire wstb_i = 0;
@@ -55,7 +70,7 @@ module test1();
     wire wack_o;
 
     // DUT
-    SdramInterfaceOriginal sdramInterfaceOriginal(
+    SdramInterfaceOriginal dut(
         
         // clocks and reset
         .clk0(ddr_clk_0),
@@ -65,31 +80,30 @@ module test1();
         .reset(~ddr_clk_ok),
 
         // SDRAM chip interface
-        .sd_ck_p(sdram_ck_p),
-        .sd_ck_n(sdram_ck_n),
-        .sd_a_o(sdram_a[12:0]),
-        .sd_ba_o(sdram_ba[1:0]),
-        .sd_d_IO(sdram_dq[15:0]),
-        .sd_ras_o(sdram_ras_n),
-        .sd_cas_o(sdram_cas_n),
-        .sd_we_o(sdram_we_n),
-        .sd_udm_o(sdram_udm),
-        .sd_ldm_o(sdram_ldm),
-        .sd_udqs_io(sdram_udqs),
-        .sd_ldqs_io(sdram_ldqs),
-        .sd_cs_o(sdram_cs_n),
-        .sd_cke_o(sdram_cke),
+        .sd_CK_P(sd_ck_p),
+        .sd_CK_N(sd_ck_n),
+        .sd_A_O(sd_a_o[12:0]),
+        .sd_BA_O(sd_ba_o[1:0]),
+        .sd_RAS_O(sd_ras_o),
+        .sd_CAS_O(sd_cas_o),
+        .sd_WE_O(sd_we_o),
+        .sd_UDM_O(sd_udm_o),
+        .sd_LDM_O(sd_ldm_o),
+        .sd_UDQS_IO(sd_udqs_io),
+        .sd_LDQS_IO(sd_ldqs_io),
+        .sd_CS_O(sd_cs_o),
+        .sd_CKE_O(sd_cke_o),
+        .sd_D_IO(sd_d_io[15:0]),
 
         // Wishbone interface
-        .wadr_i(addr[25:2]),
-        .wstb_i(stb),
-        .wwe_i(we),
-        .wwrb_i(4'b1111),
-        .wdat_i(data_in_buf[31:0]),
-        .wdat_o(data_out[31:0]),
-        .wack_o(ack)
-        
-    )
+        .wADR_I(wadr_i),
+        .wSTB_I(wstb_i),
+        .wWE_I(wwe_i),
+        .wWRB_I(wwrb_i),
+        .wDAT_I(wdat_i),
+        .wDAT_O(wdat_o),
+        .wACK_O(wack_o)
 
-endmodule;
+    );
 
+endmodule
