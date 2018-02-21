@@ -1,0 +1,17 @@
+module blink;
+
+interface {
+	in bit clk;
+	in bit switch1;
+	out bit led;
+}
+
+register vector[26] counter = 0;
+
+do (clk) {
+	counter = counter + 1;
+}
+
+do (*) {
+	led = switch1 ? counter[25] : counter[23];
+}
