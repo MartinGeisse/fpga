@@ -1,0 +1,6 @@
+
+module mahdl.references.target;
+
+interface {
+
+}
