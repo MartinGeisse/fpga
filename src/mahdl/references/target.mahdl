@@ -2,5 +2,8 @@
 module mahdl.references.target;
 
 interface {
-
+	in bit x;
+	out bit y;
 }
+
+do (*) y = x;

@@ -1,0 +1,24 @@
+
+module mahdl.references.source;
+
+interface {
+
+	in bit clk;
+}
+
+signal bit aaa;
+register bit bbb;
+
+do (*) {
+	aaa = 1;
+}
+
+do (clk) {
+	bbb = aaa ^ bbb;
+}
+
+mahdl.references.target target {
+
+
+}
+
