@@ -1,0 +1,50 @@
+
+module mahdl.AssignmentConflicts;
+
+interface {
+	in bit clk;
+}
+
+
+
+do (clk) {
+	b = 0;
+}
+register bit b = 1;
+do (clk) {
+	b = 0;
+}
+do (clk) {
+	b = 0;
+}
+
+
+
+do (*) {
+	s = 0;
+}
+do (*) {
+	s = 0;
+}
+signal bit s = 1;
+do (*) {
+	s = 0;
+}
+
+do (*) sel = 0;
+signal vector[2] sel;
+signal vector[5] val;
+
+do (*) val = switch(sel) {
+
+case 2b00: 5d0
+case 2b01: 5d0
+case 2b10: 5d0
+case 2b11: 5d0
+
+
+default: 5d0
+
+};
+
+

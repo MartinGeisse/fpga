@@ -1,0 +1,42 @@
+
+* build a really cool SoC
+build hardware
+	--> implement MaHDL
+	--> choose CPU
+	build GPU
+		--> build memory interface
+		build simple pixel buffer GPU
+			--> build memory interface
+		build software model
+	build memory interface
+		--> implement MaHDL
+	build storage interface
+		choose storage interface
+			check SD card
+			check IDE
+			check SATA
+			check USB
+	build USB host
+		choose USB standard subset to implement; reduce specification documents
+
+build software
+	--> choose CPU
+	build mini OS (DOS-like)
+
+---------------------------------------------------------------------------------------------------------------------
+
+common dependencies:
+
+* choose CPU (features, size, compiler availability)
+check open CPU designs
+
+* implement MaHDL
+implement matrix loaders
+	define compilation / execution process WRT matrix loaders
+	implement loader
+	implement code generation
+implement native modules (use case: kcpsm3)
+	add native keyword
+	check module processor re-use
+	exclude modules from normal processing
+	add file copying to deploy script

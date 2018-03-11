@@ -1,4 +1,3 @@
-
 module mahdl.references.source;
 
 interface {
@@ -15,9 +14,14 @@ do (*) {
 
 do (clk) {
 	bbb = aaa ^ bbb;
+
 }
 
-mahdl.references.target target {
+signal bit a;
+mahdl.references.target target;
+do (*) {
+	target.xxx =  1;
+	a =  target.yyy;
 
 
 }
