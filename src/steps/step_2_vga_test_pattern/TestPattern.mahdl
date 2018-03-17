@@ -1,0 +1,61 @@
+module steps.step_2_vga_test_pattern.TestPattern;
+
+interface {
+	in bit clk;
+	out bit r, g, b, hsync, vsync;
+}
+
+signal bit pixelR, pixelG, pixelB;
+do (*) {
+	pixelR = x[5];
+	pixelG = y[5];
+	pixelB = (x + y)[8];
+}
+
+register bit hsyncReg, vsyncReg, hActiveReg, vActiveReg;
+do (*) {
+	r = pixelR & hActiveReg & vActiveReg;
+	g = pixelG & hActiveReg & vActiveReg;
+	b = pixelB & hActiveReg & vActiveReg;
+	hsync = hsyncReg;
+	vsync = vsyncReg;
+}
+
+// TODO compiler doesn't emit an error if an integer constant is too large in conversion to a vector
+constant integer width = 640, horizontalFrontPorch = 16, horizontalSyncPulse = 96, horizontalBackPorch = 48;
+constant integer height = 480, verticalFrontPorch = 10, verticalSyncPulse = 2, verticalBackPorch = 33;
+constant integer clocksPerPixel = 2;
+
+register vector[1] w = 0;
+register vector[10] x = 0;
+register vector[10] y = 0;
+
+do (clk) {
+	if (w == (clocksPerPixel - 1)) {
+		w = 0;
+		x = x + 1;
+		if (x == width - 1) {
+			hActiveReg = 0;
+		} else if (x == width + horizontalFrontPorch - 1) {
+			hsyncReg = 0;
+		} else if (x == width + horizontalFrontPorch + horizontalSyncPulse - 1) {
+			hsyncReg = 1;
+		} else if (x == width + horizontalFrontPorch + horizontalSyncPulse + horizontalBackPorch - 1) {
+			hActiveReg = 1;
+			x = 0;
+			y = y + 1;
+			if (y == height - 1) {
+				vActiveReg = 0;
+			} else if (y == height + verticalFrontPorch - 1) {
+				vsyncReg = 0;
+			} else if (y == height + verticalFrontPorch + verticalSyncPulse - 1) {
+				vsyncReg = 1;
+			} else if (y == height + verticalFrontPorch + verticalSyncPulse + verticalBackPorch - 1) {
+				vActiveReg = 1;
+				y = 0;
+			}
+		}
+	} else {
+		w = w + 1;
+	}
+}
