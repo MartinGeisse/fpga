@@ -21,7 +21,6 @@ do (*) {
 	vsync = vsyncReg;
 }
 
-// TODO compiler doesn't emit an error if an integer constant is too large in conversion to a vector
 constant integer width = 640, horizontalFrontPorch = 16, horizontalSyncPulse = 96, horizontalBackPorch = 48;
 constant integer height = 480, verticalFrontPorch = 10, verticalSyncPulse = 2, verticalBackPorch = 33;
 constant integer clocksPerPixel = 2;
