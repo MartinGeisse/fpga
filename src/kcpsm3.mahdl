@@ -1,0 +1,18 @@
+
+native module kcpsm3;
+
+interface {
+	in bit clk, reset, interrupt;
+	out vector[10] address;
+	in vector[18] instruction;
+	out vector[8] port_id  cv >sa<;
+	out bit write_strobe, read_strobe, interrupt_ack;
+
+	in vector[8] in_port;
+}
+
+
+			output 	[7:0]	port_id ;
+			output 		 ;
+			output 	[7:0]	out_port ;
+			input 	[7:0]	in_port ;

@@ -1,0 +1,10 @@
+module steps.step_3_picoblaze.blink;
+
+interface {
+	in bit clk;
+	out bit led;
+}
+
+matrix[1024][18] programRom = loadMatrix("programRom.mahdl-matrix");
+
+kc
