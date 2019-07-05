@@ -13,7 +13,7 @@ echo constraints: $CONSTRAINTS_FILE
 # synthesis
 xst -ifn "src/$XST_SCRIPT_FILE" -ofn build/synthesis.syr
 mkdir build/post-synthesis
-netgen -ofmt verilog -aka -w -dir build/post-synthesis synthesized.ngc
+netgen -ofmt verilog -aka -w -dir build/post-synthesis build/synthesized.ngc
 
 # translate, map, place, route
 ngdbuild -dd build/ngdbuild_temp -nt timestamp -uc "src/$CONSTRAINTS_FILE" -p XC3S500E-FG320-4 build/synthesized.ngc build/synthesized.ngd
