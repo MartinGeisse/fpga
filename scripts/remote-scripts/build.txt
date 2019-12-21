@@ -19,7 +19,7 @@ netgen -ofmt verilog -aka -w -dir build/post-synthesis build/synthesized.ngc
 ngdbuild -dd build/ngdbuild_temp -nt timestamp -uc "src/$CONSTRAINTS_FILE" -p XC3S500E-FG320-4 build/synthesized.ngc build/synthesized.ngd
 map -p XC3S500E-FG320-4 -ol high -o build/mapped.ncd build/synthesized.ngd build/mapped.pcf
 par -ol high build/mapped.ncd build/routed.ncd build/mapped.pcf
-# trce -v 20 build/routed.ncd build/mapped.pcf
+trce -v 20 build/routed.ncd build/mapped.pcf -o build/trce.twr
 
 # generate programming files
 bitgen -g ConfigRate:25 build/routed.ncd build/bitfile.bit build/mapped.pcf
